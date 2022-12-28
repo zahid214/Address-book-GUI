@@ -1,0 +1,242 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "authorship_tag": "ABX9TyMxL8eWLql1gQooEBIyXF3g",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/zahid214/Address-book-GUI/blob/main/Electronic%20component\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "bd0RSmoJhV2m"
+      },
+      "outputs": [],
+      "source": [
+        "import numpy as np\n",
+        "import matplotlib.pyplot as plt\n",
+        "import random\n",
+        "import os\n",
+        "import PIL\n",
+        "from keras.utils import np_utils\n",
+        "from keras.models import Sequential\n",
+        "from keras.layers.core import Dense, Dropout, Activation\n",
+        "from skimage.transform import resize\n",
+        "from sklearn.metrics import confusion_matrix"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "dataset_path = \"/content/dataset\"\n",
+        "#desired resolution of image\n",
+        "TARGET_WIDTH = 28\n",
+        "TARGET_HEIGHT = 28\n",
+        "#invert image dark background shows sometime better results\n",
+        "invert = False\n",
+        "#split data\n",
+        "VAL_RATIO = 0.2\n",
+        "TEST_RATIO = 0.2\n",
+        "#rndom data from seed\n",
+        "random.seed(42)"
+      ],
+      "metadata": {
+        "id": "G5VVTeokOF0D"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "labels = []\n",
+        "y_all = []\n",
+        "X_all = []\n",
+        "#find and load Dataset\n",
+        "for label in os.listdir(dataset_path):\n",
+        "  class_dir = os.path.join(dataset_path, label)\n",
+        "  if os.path.isdir(class_dir) and label != \"ipynb_checkpoints\":\n",
+        "    #add name of folder to our labels list\n",
+        "    labels.append(label)\n",
+        "    #go through each image in the folder\n",
+        "    for i, file in enumerate(os.listdir(class_dir)):\n",
+        "      #sip the jupyter noteook checkpoint folder that get sometime added\n",
+        "      if file != \"ipynb_checkpoints\":\n",
+        "        #pen image and convert to grayscale\n",
+        "        file_path = os.path.join(class_dir, file)\n",
+        "        img = PIL.Image.open(file_path).convert('L')\n",
+        "        #convert image in numpy\n",
+        "        img_array = np.asarray(img)\n",
+        "        if invert:\n",
+        "          img_array = 255 - img_array\n",
+        "        X_all.append(img_array)\n",
+        "        #add label to y array\n",
+        "        y_all.append(label)\n",
+        "    #show how much images we loaded\n",
+        "    print('added', str(i+1),'images from', label)\n",
+        "#calculate total no of samples\n",
+        "num_sample = len(X_all)\n",
+        "#sort the label by alphabatical order\n",
+        "labels = sorted(labels) \n",
+        "#print labels and no of samples\n",
+        "print(labels)\n",
+        "print('number of samples =',num_sample)\n",
+        "\n",
+        "\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "wmwH2lUz7-p8",
+        "outputId": "76df4680-0c75-4afe-d9d7-77913225ade8"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "added 50 images from background\n",
+            "added 50 images from capacitor\n",
+            "added 50 images from diode\n",
+            "added 50 images from led\n",
+            "added 50 images from resistor\n",
+            "['background', 'capacitor', 'diode', 'led', 'resistor']\n",
+            "number of samples = 250\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "#convert label to numbers\n",
+        "print(\"before\", y_all)\n",
+        "#convert each label to its index\n",
+        "y_out = []\n",
+        "for i, label in enumerate(y_all):\n",
+        "  y_out.append(labels.index(label))\n",
+        "y_all = y_out\n",
+        "print(\"after\", y_all)"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "8cDF-EN66InX",
+        "outputId": "dc5c3e25-4a4c-4175-a652-79954acb5bc6"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "before ['background', 'background', 'background', 'background', 'background', 'background', 'background', 'background', 'background', 'background', 'background', 'background', 'background', 'background', 'background', 'background', 'background', 'background', 'background', 'background', 'background', 'background', 'background', 'background', 'background', 'background', 'background', 'background', 'background', 'background', 'background', 'background', 'background', 'background', 'background', 'background', 'background', 'background', 'background', 'background', 'background', 'background', 'background', 'background', 'background', 'background', 'background', 'background', 'background', 'background', 'capacitor', 'capacitor', 'capacitor', 'capacitor', 'capacitor', 'capacitor', 'capacitor', 'capacitor', 'capacitor', 'capacitor', 'capacitor', 'capacitor', 'capacitor', 'capacitor', 'capacitor', 'capacitor', 'capacitor', 'capacitor', 'capacitor', 'capacitor', 'capacitor', 'capacitor', 'capacitor', 'capacitor', 'capacitor', 'capacitor', 'capacitor', 'capacitor', 'capacitor', 'capacitor', 'capacitor', 'capacitor', 'capacitor', 'capacitor', 'capacitor', 'capacitor', 'capacitor', 'capacitor', 'capacitor', 'capacitor', 'capacitor', 'capacitor', 'capacitor', 'capacitor', 'capacitor', 'capacitor', 'capacitor', 'capacitor', 'capacitor', 'capacitor', 'diode', 'diode', 'diode', 'diode', 'diode', 'diode', 'diode', 'diode', 'diode', 'diode', 'diode', 'diode', 'diode', 'diode', 'diode', 'diode', 'diode', 'diode', 'diode', 'diode', 'diode', 'diode', 'diode', 'diode', 'diode', 'diode', 'diode', 'diode', 'diode', 'diode', 'diode', 'diode', 'diode', 'diode', 'diode', 'diode', 'diode', 'diode', 'diode', 'diode', 'diode', 'diode', 'diode', 'diode', 'diode', 'diode', 'diode', 'diode', 'diode', 'diode', 'led', 'led', 'led', 'led', 'led', 'led', 'led', 'led', 'led', 'led', 'led', 'led', 'led', 'led', 'led', 'led', 'led', 'led', 'led', 'led', 'led', 'led', 'led', 'led', 'led', 'led', 'led', 'led', 'led', 'led', 'led', 'led', 'led', 'led', 'led', 'led', 'led', 'led', 'led', 'led', 'led', 'led', 'led', 'led', 'led', 'led', 'led', 'led', 'led', 'led', 'resistor', 'resistor', 'resistor', 'resistor', 'resistor', 'resistor', 'resistor', 'resistor', 'resistor', 'resistor', 'resistor', 'resistor', 'resistor', 'resistor', 'resistor', 'resistor', 'resistor', 'resistor', 'resistor', 'resistor', 'resistor', 'resistor', 'resistor', 'resistor', 'resistor', 'resistor', 'resistor', 'resistor', 'resistor', 'resistor', 'resistor', 'resistor', 'resistor', 'resistor', 'resistor', 'resistor', 'resistor', 'resistor', 'resistor', 'resistor', 'resistor', 'resistor', 'resistor', 'resistor', 'resistor', 'resistor', 'resistor', 'resistor', 'resistor', 'resistor']\n",
+            "after [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "#shuffle samples\n",
+        "X_y = list(zip(X_all, y_all))\n",
+        "random.shuffle(X_y)\n",
+        "X_all, y_all = zip(*X_y)\n",
+        "#number of train, test and validation samples\n",
+        "num_test_samp = int(TEST_RATIO * num_sample)\n",
+        "num_val_samp = int(VAL_RATIO * num_sample)\n",
+        "#first test set\n",
+        "x_test = X_all[:num_test_samp]\n",
+        "y_test = y_all[:num_test_samp]\n",
+        "#second validation set\n",
+        "x_val = X_all[num_test_samp:(num_test_samp+num_val_samp)]\n",
+        "y_val = y_all[num_test_samp:(num_test_samp+num_val_samp)]\n",
+        "#training set\n",
+        "x_train = X_all[(num_test_samp + num_val_samp):]\n",
+        "y_train = y_all[(num_test_samp + num_val_samp):]\n",
+        "#remember train sample\n",
+        "num_train_samp = len(x_train)\n",
+        "print(\"number of test samples = \", num_test_samp)\n",
+        "print(\"number of validation samples = \", num_val_samp)\n",
+        "print(\"number of train samples = \", num_train_samp)"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "0azdgVuNC5S8",
+        "outputId": "2f703250-1ea6-463d-fdd3-e64a6c4ee736"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "number of test samples =  50\n",
+            "number of validation samples =  50\n",
+            "number of train samples =  150\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "#view training images you want\n",
+        "idx = 10\n",
+        "print(\"Label\",+ (x_train[idx]),+\"(\", + labels(y_train[idx]) + \")\" )\n",
+        "print(x_train[idx])\n",
+        "#display image\n",
+        "plt.show(x_train[idx], cmap = 'Gray', vmin=0, vmax=255)"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 235
+        },
+        "id": "4-LSMD6iJI82",
+        "outputId": "df820ea7-2ff1-4863-ba6d-335a53abfb0c"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "error",
+          "ename": "TypeError",
+          "evalue": "ignored",
+          "traceback": [
+            "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+            "\u001b[0;31mTypeError\u001b[0m                                 Traceback (most recent call last)",
+            "\u001b[0;32m<ipython-input-16-068987451c86>\u001b[0m in \u001b[0;36m<module>\u001b[0;34m\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[0;31m#view training images you want\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m      2\u001b[0m \u001b[0midx\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0;36m10\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m----> 3\u001b[0;31m \u001b[0mprint\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m\"Label\"\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m+\u001b[0m \u001b[0;34m(\u001b[0m\u001b[0mx_train\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0midx\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m+\u001b[0m\u001b[0;34m\"(\"\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m+\u001b[0m \u001b[0mlabels\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0my_train\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0midx\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m)\u001b[0m \u001b[0;34m+\u001b[0m \u001b[0;34m\")\"\u001b[0m \u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m      4\u001b[0m \u001b[0mprint\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mx_train\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0midx\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m      5\u001b[0m \u001b[0;31m#display image\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+            "\u001b[0;31mTypeError\u001b[0m: bad operand type for unary +: 'str'"
+          ]
+        }
+      ]
+    }
+  ]
+}
